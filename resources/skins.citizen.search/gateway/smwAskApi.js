@@ -14,12 +14,13 @@ function getUrl( input ) {
 	let askQuery = '';
 
 	if ( input.includes( ':' ) ) {
+
 		let namespace = input.split( ':' )[ 0 ];
 		if ( namespace === 'Category' ) { namespace = ':' + namespace; }
 		input = input.split( ':' )[ 1 ];
 		askQuery += '[[' + namespace + ':+]]';
 	}
-
+	
 	askQuery += askQueryTemplate.replaceAll( '${input}', input );
 	askQuery += '|limit=' + maxResults;
 
