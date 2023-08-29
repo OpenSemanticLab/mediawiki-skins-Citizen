@@ -273,7 +273,7 @@
 				"trash",
 				"unLock",
 				"unStar",
-				"upload",	
+				"upload",
 				"userAdd",
 				"userAvatar",
 				"userContributions",
@@ -625,10 +625,10 @@
 			"public": true
 		},
 		"DisplayRealUserName": {
-                        "value": false,
-                        "description": "Shows the user's real name in the user menu",
-                        "descriptionmsg": "citizen-config-displayrealusername",
-                        "public": true
+			"value": false,
+			"description": "Shows the user's real name in the user menu",
+			"descriptionmsg": "citizen-config-displayrealusername",
+			"public": true
 		},
 		"TableNowrapClasses": {
 			"value": [
