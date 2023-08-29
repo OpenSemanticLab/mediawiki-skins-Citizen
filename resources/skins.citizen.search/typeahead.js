@@ -470,6 +470,16 @@ function updateTypeaheadItems() {
 			} );
 		}
 
+		// Chatbot
+		if ( config.isChatbotExtensionEnabled ) {
+			updateToolItem( {
+				// id: 'chatbot',
+				link: `${config.wgScriptPath}/index.php?title=Special:Chatbot&q=`,
+				icon: 'speechBubbles',
+				msg: 'citizen-search-chatbot-empty'
+			} );
+		}
+
 		const hasTools = !!document.querySelector( '.citizen-typeahead-item-group[data-group="tool"]' );
 		if ( !hasTools ) {
 			const toolData = {
@@ -488,6 +498,7 @@ function updateTypeaheadItems() {
 				label: mw.message( item.msg )
 			} );
 		} );
+
 	};
 
 	if ( searchQuery.isValid ) {
