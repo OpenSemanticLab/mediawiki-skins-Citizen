@@ -432,6 +432,16 @@ function updateTypeahead() {
 				msg: hasQuery ? 'citizen-search-mediasearch' : 'citizen-search-mediasearch-empty'
 			} );
 		}
+
+		// Chatbot
+		if ( config.isChatbotExtensionEnabled ) {
+			updateToolItem( {
+				id: 'chatbot',
+				link: `${config.wgScriptPath}/index.php?title=Special:Chatbot&q=`,
+				icon: 'speechBubbles',
+				msg: hasQuery ? 'citizen-search-chatbot' : 'citizen-search-chatbot-empty'
+			} );
+		}
 	};
 
 	getTools();

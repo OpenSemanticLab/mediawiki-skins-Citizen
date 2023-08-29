@@ -84,6 +84,7 @@ class ResourceLoaderHooks {
 			'wgScriptPath' => $config->get( 'ScriptPath' ),
 			'wgSearchSuggestCacheExpiry' => $config->get( 'SearchSuggestCacheExpiry' ),
 			'isMediaSearchExtensionEnabled' => ExtensionRegistry::getInstance()->isLoaded( 'MediaSearch' ),
+			'isChatbotExtensionEnabled' => ExtensionRegistry::getInstance()->isLoaded( 'Chatbot' ),
 		];
 	}
 }
