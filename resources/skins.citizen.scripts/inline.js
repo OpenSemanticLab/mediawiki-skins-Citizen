@@ -4,9 +4,8 @@
  * Inline script used in includes/Hooks/SkinHooks.php
  * Mangle using https://jscompress.com/
  */
-console.log('check apply')
+console.log( 'check apply' );
 window.applyPref = () => {
-
 
 	const
 		prefix = 'skin-citizen-',
@@ -58,11 +57,11 @@ window.applyPref = () => {
 				// * skin-citizen-light
 				// * skin-citizen-dark
 				htmlElement.classList.remove( ...classNames( prefix ) );
-				
+
 				htmlElement.classList.add( prefix + theme );
 
-				htmlElement.setAttribute('data-bs-theme', theme)
-			
+				htmlElement.setAttribute( 'data-bs-theme', theme );
+
 			}
 
 			// Apply pref by adding CSS to root
