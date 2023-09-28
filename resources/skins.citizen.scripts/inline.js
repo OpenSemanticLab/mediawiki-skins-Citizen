@@ -4,7 +4,10 @@
  * Inline script used in includes/Hooks/SkinHooks.php
  * Mangle using https://jscompress.com/
  */
+console.log('check apply')
 window.applyPref = () => {
+
+
 	const
 		prefix = 'skin-citizen-',
 		themeKey = prefix + 'theme';
@@ -41,7 +44,6 @@ window.applyPref = () => {
 			}
 			style.textContent = `:root{${css}}`;
 		};
-
 		try {
 			const theme = getStorage( themeKey );
 
@@ -56,8 +58,11 @@ window.applyPref = () => {
 				// * skin-citizen-light
 				// * skin-citizen-dark
 				htmlElement.classList.remove( ...classNames( prefix ) );
-
+				
 				htmlElement.classList.add( prefix + theme );
+
+				htmlElement.setAttribute('data-bs-theme', theme)
+			
 			}
 
 			// Apply pref by adding CSS to root
@@ -72,6 +77,7 @@ window.applyPref = () => {
 
 			if ( cssDeclaration ) {
 				injectStyles( cssDeclaration );
+
 			}
 		} catch ( e ) {
 		}
