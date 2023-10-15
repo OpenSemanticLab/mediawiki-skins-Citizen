@@ -224,7 +224,8 @@ final class BodyContent extends Partial {
 	private function createSectionBodyElement( DOMDocument $doc, $sectionNumber, $collapsed = false ) {
 		$sectionBody = $doc->createElement( 'section' );
 		$classList = self::STYLE_COLLAPSIBLE_SECTION_CLASS;
-		if ( $collapsed ) $classList .= " " . self::STYLE_COLLAPSIBLE_SECTION_COLLAPSED_CLASS;
+		if ( $collapsed ) { $classList .= " " . self::STYLE_COLLAPSIBLE_SECTION_COLLAPSED_CLASS;
+		}
 		$sectionBody->setAttribute( 'class', $classList );
 		$sectionBody->setAttribute( 'id', 'section-collapsible-' . $sectionNumber );
 
