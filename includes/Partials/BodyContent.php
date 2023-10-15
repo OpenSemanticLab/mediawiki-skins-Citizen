@@ -45,6 +45,8 @@ final class BodyContent extends Partial {
 	 * Class name for collapsible section wrappers
 	 */
 	public const STYLE_COLLAPSIBLE_SECTION_CLASS = 'section-collapsible';
+	public const STYLE_COLLAPSIBLE_SECTION_COLLAPSED_CLASS = 'section-collapsible--collapsed';
+	public const STYLE_SECTION_HEADING_COLLAPSED_CLASS = 'section-heading--collapsed';
 
 	/**
 	 * List of tags that could be considered as section headers.
@@ -147,8 +149,11 @@ final class BodyContent extends Partial {
 
 		$firstHeading = reset( $headingWrappers );
 		$firstHeadingName = $this->getHeadingName( $firstHeading );
+		// get the initial collapsed state of the current heading
+		$headingClassName = $firstHeading->hasAttribute( 'class' ) ? $firstHeading->getAttribute( 'class' ) : '';
+		$collapsed = strpos( $headingClassName, self::STYLE_SECTION_HEADING_COLLAPSED_CLASS ) !== false;
 		$sectionNumber = 0;
-		$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber );
+		$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber, $collapsed );
 
 		foreach ( $containers as $container ) {
 			$containerChild = $container->firstChild;
@@ -168,7 +173,11 @@ final class BodyContent extends Partial {
 					$container->insertBefore( $sectionBody, $node );
 
 					++$sectionNumber;
-					$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber );
+					// get the initial collapsed state of the current heading
+					$headingClassName = $node->hasAttribute( 'class' ) ? $node->getAttribute( 'class' ) : '';
+					$collapsed = strpos( $headingClassName, self::STYLE_SECTION_HEADING_COLLAPSED_CLASS ) !== false;
+					$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber, $collapsed );
+
 					continue;
 				}
 
@@ -212,9 +221,11 @@ final class BodyContent extends Partial {
 	 *
 	 * @return DOMElement
 	 */
-	private function createSectionBodyElement( DOMDocument $doc, $sectionNumber ) {
+	private function createSectionBodyElement( DOMDocument $doc, $sectionNumber, $collapsed = false ) {
 		$sectionBody = $doc->createElement( 'section' );
-		$sectionBody->setAttribute( 'class', self::STYLE_COLLAPSIBLE_SECTION_CLASS );
+		$classList = self::STYLE_COLLAPSIBLE_SECTION_CLASS;
+		if ( $collapsed ) $classList .= " " . self::STYLE_COLLAPSIBLE_SECTION_COLLAPSED_CLASS;
+		$sectionBody->setAttribute( 'class', $classList );
 		$sectionBody->setAttribute( 'id', 'section-collapsible-' . $sectionNumber );
 
 		return $sectionBody;
