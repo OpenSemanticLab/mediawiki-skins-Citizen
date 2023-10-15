@@ -131,47 +131,55 @@ final class BodyContent extends Partial {
 	 */
 	private function makeSections( DOMDocument $doc, array $headingWrappers ) {
 		$xpath = new DOMXpath( $doc );
-		$containers = $xpath->query( '//div[@class="mw-parser-output"][1]' );
+		// Search for slot-wrappers (on pages with additional slots beside 'main')
+		// see: https://github.com/OpenSemanticLab/mediawiki/blob/
+		// 72bd0b45bbe45b77f919ebe493dc21587f1e7367/includes/Revision/RevisionRenderer.php#L276
+		$containers = $xpath->query( '//div[@class="mw-slot-wrapper"]' );
 
-		// Return if no parser output is found
+		// Fall back to parent container (on pages with only slot 'main' populated)
 		if ( !$containers->length || $containers->item( 0 ) === null ) {
-			return $doc;
+			$containers = $xpath->query( '//div[@class="mw-parser-output"][1]' );
+			// Return if no parser output is found
+			if ( !$containers->length || $containers->item( 0 ) === null ) {
+				return $doc;
+			}
 		}
 
-		$container = $containers->item( 0 );
-
-		$containerChild = $container->firstChild;
 		$firstHeading = reset( $headingWrappers );
 		$firstHeadingName = $this->getHeadingName( $firstHeading );
 		$sectionNumber = 0;
 		$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber );
 
-		while ( $containerChild ) {
-			$node = $containerChild;
-			$containerChild = $containerChild->nextSibling;
+		foreach ( $containers as $container ) {
+			$containerChild = $container->firstChild;
 
-			// If we've found a top level heading, insert the previous section if
-			// necessary and clear the container div.
-			if ( $firstHeadingName && $this->getHeadingName( $node ) === $firstHeadingName ) {
-				// The heading we are transforming is always 1 section ahead of the
-				// section we are currently processing
-				/** @phan-suppress-next-line PhanTypeMismatchArgument DOMNode vs. DOMElement */
-				$this->prepareHeading( $doc, $node, $sectionNumber + 1 );
-				// Insert the previous section body and reset it for the new section
-				$container->insertBefore( $sectionBody, $node );
+			while ( $containerChild ) {
+				$node = $containerChild;
+				$containerChild = $containerChild->nextSibling;
 
-				++$sectionNumber;
-				$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber );
-				continue;
+				// If we've found a top level heading, insert the previous section if
+				// necessary and clear the container div.
+				if ( $firstHeadingName && $this->getHeadingName( $node ) === $firstHeadingName ) {
+					// The heading we are transforming is always 1 section ahead of the
+					// section we are currently processing
+					/** @phan-suppress-next-line PhanTypeMismatchArgument DOMNode vs. DOMElement */
+					$this->prepareHeading( $doc, $node, $sectionNumber + 1 );
+					// Insert the previous section body and reset it for the new section
+					$container->insertBefore( $sectionBody, $node );
+
+					++$sectionNumber;
+					$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber );
+					continue;
+				}
+
+				// If it is not a top level heading, keep appending the nodes to the
+				// section body container.
+				$sectionBody->appendChild( $node );
 			}
 
-			// If it is not a top level heading, keep appending the nodes to the
-			// section body container.
-			$sectionBody->appendChild( $node );
+			// Append the last section body.
+			$container->appendChild( $sectionBody );
 		}
-
-		// Append the last section body.
-		$container->appendChild( $sectionBody );
 
 		// Mark subheadings
 		$this->markSubHeadings( $this->getSubHeadings( $doc ) );
