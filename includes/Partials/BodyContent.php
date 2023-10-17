@@ -150,8 +150,11 @@ final class BodyContent extends Partial {
 		$firstHeading = reset( $headingWrappers );
 		$firstHeadingName = $this->getHeadingName( $firstHeading );
 		// get the initial collapsed state of the current heading
-		$headingClassName = $firstHeading->hasAttribute( 'class' ) ? $firstHeading->getAttribute( 'class' ) : '';
-		$collapsed = strpos( $headingClassName, self::STYLE_SECTION_HEADING_COLLAPSED_CLASS ) !== false;
+		$collapsed = false;
+		if ( $firstHeading ) {
+			$headingClassName = $firstHeading->hasAttribute( 'class' ) ? $firstHeading->getAttribute( 'class' ) : '';
+			$collapsed = strpos( $headingClassName, self::STYLE_SECTION_HEADING_COLLAPSED_CLASS ) !== false;
+		}
 		$sectionNumber = 0;
 		$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber, $collapsed );
 
