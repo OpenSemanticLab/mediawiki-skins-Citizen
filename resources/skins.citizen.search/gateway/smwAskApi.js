@@ -22,7 +22,7 @@ function getUrl( input ) {
 
 	askQuery += askQueryTemplate.replaceAll( '${input}', input )
 		.replaceAll( '${input_lowercase}', input.toLowerCase() )
-		.replaceAll( '${input_normalized}', input.toLowerCase().replace(/[^0-9a-z]/gi, '') );
+		.replaceAll( '${input_normalized}', input.toLowerCase().replace( /[^0-9a-z]/gi, '' ) );
 	askQuery += '|limit=' + maxResults;
 
 	const query = {
