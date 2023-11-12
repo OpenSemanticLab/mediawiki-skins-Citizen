@@ -20,7 +20,9 @@ function getUrl( input ) {
 		askQuery += '[[' + namespace + ':+]]';
 	}
 
-	askQuery += askQueryTemplate.replaceAll( '${input}', input );
+	askQuery += askQueryTemplate.replaceAll( '${input}', input )
+		.replaceAll( '${input_lowercase}', input.toLowerCase() )
+		.replaceAll( '${input_normalized}', input.toLowerCase().replace(/[^0-9a-z]/gi, '') );
 	askQuery += '|limit=' + maxResults;
 
 	const query = {
