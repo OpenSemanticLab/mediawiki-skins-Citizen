@@ -165,7 +165,7 @@ function getSuggestions( searchQuery, htmlSafeSearchQuery, placeholder ) {
 		if ( results.length > 0 ) {
 			const
 				fragment = document.createDocumentFragment(),
-				suggestionLinkPrefix = `${config.wgScriptPath}/index.php?title=Special:Search&search=`;
+				suggestionLinkPrefix = `${config.wgScriptPath}/index.php?title=Special:Search&profile=default&search=`;
 			/**
 			 * Return the redirect title with search query highlight
 			 *
@@ -418,7 +418,7 @@ function updateTypeahead() {
 		// Fulltext search
 		updateToolItem( {
 			id: 'fulltext',
-			link: `${config.wgScriptPath}/index.php?title=Special:Search&fulltext=1&search=`,
+			link: `${config.wgScriptPath}/index.php?title=Special:Search&profile=default&fulltext=1&search=`,
 			icon: 'articleSearch',
 			msg: hasQuery ? 'citizen-search-fulltext' : 'citizen-search-fulltext-empty'
 		} );
