@@ -13,17 +13,48 @@ function getUrl( input ) {
 
 	let askQuery = '';
 
-	if ( input.includes( ':' ) ) {
-		let namespace = input.split( ':' )[ 0 ];
-		if ( namespace === 'Category' ) { namespace = ':' + namespace; }
-		input = input.split( ':' )[ 1 ];
-		askQuery += '[[' + namespace + ':+]]';
+	// detect direct inserted UUID patterns
+	const uuid_regex = /([a-f0-9]{8})(_|-| |){1}([a-f0-9]{4})(_|-| |){1}([a-f0-9]{4})(_|-| |){1}([a-f0-9]{4})(_|-| |){1}([a-f0-9]{12})/gm;
+	const matches = input.match(uuid_regex);
+	if (matches && matches.length) {
+		let uuidQuery = ""
+		for (const match of matches) uuidQuery += "[[HasUuid::" + match.replace(uuid_regex, `$1-$3-$5-$7-$9`) + "]]OR";
+		uuidQuery = uuidQuery.replace(/OR+$/, ''); // trim last 'OR'
+		askQuery = askQuery.replace(askQuery.split('|')[0], uuidQuery); // replace filter ([[...]]) before print statements (|?...)
 	}
+	else {
+		if ( input.includes( ':' ) ) {
+			let namespace = input.split( ':' )[ 0 ];
+			if ( namespace === 'Category' ) { namespace = ':' + namespace; }
+			input = input.split( ':' )[ 1 ];
+			askQuery += '[[' + namespace + ':+]]';
+		}
 
-	askQuery += askQueryTemplate.replaceAll( '${input}', input )
-		.replaceAll( '${input_lowercase}', input.toLowerCase() )
-		.replaceAll( '${input_normalized}', input.toLowerCase().replace( /[^0-9a-z]/gi, '' ) );
-	askQuery += '|limit=' + maxResults;
+		askQuery += askQueryTemplate.replaceAll( '${input}', input )
+			.replaceAll( '${input_lowercase}', input.toLowerCase() )
+			.replaceAll( '${input_normalized}', input.toLowerCase().replace( /[^0-9a-z]/gi, '' ) )
+
+		if ( askQuery.includes( '${input_normalized_tokenized}' ) ) {
+			askQuery = askQuery.replace(
+				/(\[\[[\s]*[\S]+[\s]*::[\s\S]*)\${input_normalized_tokenized}([\s\S]*\]\])/gm, 
+				(match, pre, post) => {
+					// e.g. "[[ HasNormalizedLabel::~*${input_normalized_tokenized}*]]..."" with input "Word1 Word2"
+					// => "[[ HasNormalizedLabel::~*word1*word2*]]..."
+					let res = match.replaceAll( 
+						'${input_normalized_tokenized}', 
+						input.toLowerCase().replaceAll(' ', '*').replace( /[^0-9a-z\*]/gi, '' ) 
+					);
+					// e.g. "[[ HasNormalizedLabel::~*${input_normalized_tokenized}*]]..."" with input "Word1 Word2"
+					// => "[[ HasNormalizedLabel::~*word1*]]...OR[[ HasNormalizedLabel::~*word2*]]..."
+					// This has a low performance and accuracy, hence disabled
+					//for (let token of input.split(' ')) 
+					//	if (token !== "") res += pre + token.toLowerCase().replace( /[^0-9a-z]/gi, '' ) + post + "OR";
+					return res.replace(/OR+$/, ''); // trim last 'OR'
+				}
+			);
+		}
+	}
+	
 
 	const query = {
 		action: 'ask',
