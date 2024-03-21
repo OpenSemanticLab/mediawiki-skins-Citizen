@@ -48,7 +48,7 @@ async function getResults( searchQuery, controller ) {
 	}
 
 	const data = await response.json();
-	return gateway.convertDataToResults( data );
+	return gateway.convertDataToResults( data, searchQuery );
 }
 
 module.exports = {

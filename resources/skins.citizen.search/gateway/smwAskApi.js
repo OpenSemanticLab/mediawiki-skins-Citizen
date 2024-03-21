@@ -55,6 +55,7 @@ function getUrl( input ) {
 		}
 	}
 	
+	askQuery += '|limit=' + 4*maxResults; // fetch more results, limit number after sorting
 
 	const query = {
 		action: 'ask',
@@ -73,9 +74,10 @@ function getUrl( input ) {
  * Map raw response to Results object
  *
  * @param {Object} data
+ * @param {String} searchQuery
  * @return {Object} Results
  */
-function convertDataToResults( data ) {
+function convertDataToResults( data, searchQuery ) {
 	const userLang = mw.config.get( 'wgUserLanguage' );
 
 	const getDisplayTitle = ( item ) => {
@@ -137,7 +139,10 @@ function convertDataToResults( data ) {
 		};
 	}
 
-	return results;
+	// rank result higher if title length is near query length
+	results.sort((a, b) => searchQuery.length/b.title.length - searchQuery.length/a.title.length)
+
+	return results.slice(0, config.wgCitizenMaxSearchResults); // return max. the requested number of results
 }
 
 module.exports = {
