@@ -50,7 +50,7 @@ function getUrl( input ) {
 		// replace variables with user input
 		askQuery = askQuery.replaceAll( '${input}', input )
 			.replaceAll( '${input_lowercase}', input.toLowerCase() )
-			.replaceAll( '${input_normalized}', input.toLowerCase().replace( /[^0-9a-z]/gi, '' ) )
+			.replaceAll( '${input_normalized}', input.toLowerCase().replace( /[^0-9a-z]/gi, '' ) );
 
 		if ( askQuery.includes( '${input_normalized_tokenized}' ) ) {
 			askQuery = askQuery.replace(
@@ -103,7 +103,7 @@ function getUrl( input ) {
  * Map raw response to Results object
  *
  * @param {Object} data
- * @param {String} searchQuery
+ * @param {string} searchQuery
  * @return {Object} Results
  */
 function convertDataToResults( data, searchQuery ) {
@@ -169,9 +169,9 @@ function convertDataToResults( data, searchQuery ) {
 	}
 
 	// rank result higher if title length is near query length
-	results.sort((a, b) => searchQuery.length/b.title.length - searchQuery.length/a.title.length)
+	results.sort( ( a, b ) => searchQuery.length / b.title.length - searchQuery.length / a.title.length );
 
-	return results.slice(0, config.wgCitizenMaxSearchResults); // return max. the requested number of results
+	return results.slice( 0, config.wgCitizenMaxSearchResults ); // return max. the requested number of results
 }
 
 module.exports = {
