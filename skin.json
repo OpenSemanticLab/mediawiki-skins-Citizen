@@ -582,6 +582,12 @@
 			"descriptionmsg": "citizen-config-smwaskapiquerytemplate",
 			"public": true
 		},
+		"SearchSmwApiAction": {
+			"value": "ask",
+			"description": "The SMW query action for fetching search suggestion: 'ask' (default) or 'compoundquery' (requires Extension:Semantic_Compound_Queries)",
+			"descriptionmsg": "citizen-config-smwapiaction",
+			"public": true
+		},
 		"ShowPageTools": {
 			"value": true,
 			"description": "Page tools visibility condition",

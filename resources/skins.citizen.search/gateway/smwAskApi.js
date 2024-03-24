@@ -8,10 +8,13 @@ const config = require( '../config.json' );
  */
 function getUrl( input ) {
 	const endpoint = config.wgScriptPath + '/api.php?format=json',
-		maxResults = config.wgCitizenMaxSearchResults,
-		askQueryTemplate = config.wgCitizenSearchSmwAskApiQueryTemplate;
-
-	let askQuery = '';
+		maxResults = config.wgCitizenMaxSearchResults;
+	
+	let useCompoundQuery = config.wgCitizenSearchSmwApiAction === 'compoundquery';
+	
+	let askQuery = config.wgCitizenSearchSmwAskApiQueryTemplate;
+	// Normalize standard ask-queries if compoundquery is enabled
+	if (useCompoundQuery && !askQuery.includes(';')) askQuery = askQuery.replaceAll('|', ';');
 
 	// detect direct inserted UUID patterns
 	const uuid_regex = /([a-f0-9]{8})(_|-| |){1}([a-f0-9]{4})(_|-| |){1}([a-f0-9]{4})(_|-| |){1}([a-f0-9]{4})(_|-| |){1}([a-f0-9]{12})/gm;
@@ -20,17 +23,32 @@ function getUrl( input ) {
 		let uuidQuery = ""
 		for (const match of matches) uuidQuery += "[[HasUuid::" + match.replace(uuid_regex, `$1-$3-$5-$7-$9`) + "]]OR";
 		uuidQuery = uuidQuery.replace(/OR+$/, ''); // trim last 'OR'
-		askQuery = askQuery.replace(askQuery.split('|')[0], uuidQuery); // replace filter ([[...]]) before print statements (|?...)
+		if (useCompoundQuery) {
+			askQuery = askQuery.split('|')[0]; // use first subquery
+			askQuery = askQuery.replace(askQuery.split(';')[0], uuidQuery); // replace filter ([[...]]) before print statements (;?...)
+			askQuery = askQuery.replace(/;?limit=[0-9]+/, ""); // remove limit (set default limit later)
+		}
+		else askQuery = askQuery.replace(askQuery.split('|?')[0], uuidQuery); // replace filter ([[...]]) before print statements (;?...)
 	}
 	else {
 		if ( input.includes( ':' ) ) {
 			let namespace = input.split( ':' )[ 0 ];
 			if ( namespace === 'Category' ) { namespace = ':' + namespace; }
 			input = input.split( ':' )[ 1 ];
-			askQuery += '[[' + namespace + ':+]]';
+			
+			if (useCompoundQuery) {
+				let res = "";
+				for (let subquery of askQuery.split('|')) {
+					if (subquery.includes("[[")) res += '[[' + namespace + ':+]]' + subquery + '|';
+				}
+				res = res.replace(/\|+$/, ''); // trim last '|'
+				askQuery = res;
+			}
+			else askQuery = '[[' + namespace + ':+]]' + askQuery;
 		}
 
-		askQuery += askQueryTemplate.replaceAll( '${input}', input )
+		// replace variables with user input
+		askQuery = askQuery.replaceAll( '${input}', input )
 			.replaceAll( '${input_lowercase}', input.toLowerCase() )
 			.replaceAll( '${input_normalized}', input.toLowerCase().replace( /[^0-9a-z]/gi, '' ) )
 
@@ -57,10 +75,19 @@ function getUrl( input ) {
 		}
 	}
 	
-	askQuery += '|limit=' + 4*maxResults; // fetch more results, limit number after sorting
+	// ensure limit is set
+	if (useCompoundQuery) {
+		let askQueryWithLimits = "";
+		for (let subquery of askQuery.split('|')) {
+			if (subquery.includes("[[") && !subquery.includes(";limit=")) subquery += ';limit=' + maxResults;
+			askQueryWithLimits += subquery + "|"
+		}
+		askQuery = askQueryWithLimits.replace(/\|+$/, ''); // trim last '|'
+	}
+	else if (!askQuery.includes("|limit=")) askQuery += '|limit=' + maxResults;
 
 	const query = {
-		action: 'ask',
+		action: config.wgCitizenSearchSmwApiAction,
 		query: encodeURIComponent( askQuery )
 	};
 
