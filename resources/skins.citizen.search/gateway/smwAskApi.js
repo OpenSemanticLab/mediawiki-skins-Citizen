@@ -36,20 +36,22 @@ function getUrl( input ) {
 
 		if ( askQuery.includes( '${input_normalized_tokenized}' ) ) {
 			askQuery = askQuery.replace(
-				/(\[\[[\s]*[\S]+[\s]*::[\s\S]*)\${input_normalized_tokenized}([\s\S]*\]\])/gm, 
+				/(\[\[[\s]*[^\s\[]+[\s]*::[^\[]*)\${input_normalized_tokenized}([\s\S^\]]*\]\])/gm, 
 				(match, pre, post) => {
+					let res = "";
 					// e.g. "[[ HasNormalizedLabel::~*${input_normalized_tokenized}*]]..."" with input "Word1 Word2"
 					// => "[[ HasNormalizedLabel::~*word1*word2*]]..."
-					let res = match.replaceAll( 
+					// does not match "word2 word1"
+					/*res = match.replaceAll( 
 						'${input_normalized_tokenized}', 
 						input.toLowerCase().replaceAll(' ', '*').replace( /[^0-9a-z\*]/gi, '' ) 
-					);
+					);*/
 					// e.g. "[[ HasNormalizedLabel::~*${input_normalized_tokenized}*]]..."" with input "Word1 Word2"
-					// => "[[ HasNormalizedLabel::~*word1*]]...OR[[ HasNormalizedLabel::~*word2*]]..."
-					// This has a low performance and accuracy, hence disabled
-					//for (let token of input.split(' ')) 
-					//	if (token !== "") res += pre + token.toLowerCase().replace( /[^0-9a-z]/gi, '' ) + post + "OR";
-					return res.replace(/OR+$/, ''); // trim last 'OR'
+					// => "[[ HasNormalizedLabel::~*word1*]][[ HasNormalizedLabel::~*word2*]]..."
+					// Does also match "word2 word1"
+					for (let token of input.split(' ')) 
+						if (token !== "") res += pre + token.toLowerCase().replace( /[^0-9a-z]/gi, '' ) + post;
+					return res;
 				}
 			);
 		}
