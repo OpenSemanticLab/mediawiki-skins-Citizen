@@ -105,23 +105,42 @@ function convertDataToResults( data, searchQuery ) {
 	const userLang = mw.config.get( 'wgUserLanguage' );
 
 	const getDisplayTitle = ( item ) => {
+		let displaytitle = '';
+		let category_or_type = '';
+		if ( item.printouts.type && item.printouts.type.length &&
+			item.printouts.type[ 0 ][ 'Language code' ] && item.printouts.type[ 0 ].Text.item.length ) {
+			// multi-lang string preference: user lang => English => first result
+			let textEN = '';
+			for ( const text of item.printouts.type ) {
+				if ( text[ 'Language code' ].item[ 0 ] === userLang ) { category_or_type = text.Text.item[ 0 ]; }
+				if ( text[ 'Language code' ].item[ 0 ] === 'en' ) { textEN = text.Text.item[ 0 ]; }
+			}
+			if ( category_or_type === '' ) { category_or_type = textEN; }
+			if ( category_or_type === '' ) { category_or_type = item.printouts.type[ 0 ].Text.item[ 0 ]; }
+			
+		} else if ( item.printouts.type && item.printouts.type.length ) {
+			category_or_type = item.printouts.type[ 0 ];
+		} else if ( item.type && item.type !== '' ) {
+			category_or_type = item.type;
+		} else category_or_type = item.fulltext.includes(':') ? item.fulltext.split(':')[0] : '';
 		if ( item.printouts.displaytitle && item.printouts.displaytitle.length &&
 			item.printouts.displaytitle[ 0 ][ 'Language code' ] && item.printouts.displaytitle[ 0 ].Text.item.length ) {
 			// multi-lang string preference: user lang => English => first result
 			let textEN = '';
-			let textResult = '';
 			for ( const text of item.printouts.displaytitle ) {
-				if ( text[ 'Language code' ].item[ 0 ] === userLang ) { textResult = text.Text.item[ 0 ]; }
+				if ( text[ 'Language code' ].item[ 0 ] === userLang ) { displaytitle = text.Text.item[ 0 ]; }
 				if ( text[ 'Language code' ].item[ 0 ] === 'en' ) { textEN = text.Text.item[ 0 ]; }
 			}
-			if ( textResult === '' ) { textResult = textEN; }
-			if ( textResult === '' ) { textResult = item.printouts.displaytitle[ 0 ].Text.item[ 0 ]; }
-			return textResult;
+			if ( displaytitle === '' ) { displaytitle = textEN; }
+			if ( displaytitle === '' ) { displaytitle = item.printouts.displaytitle[ 0 ].Text.item[ 0 ]; }
+			
 		} else if ( item.printouts.displaytitle && item.printouts.displaytitle.length ) {
-			return item.printouts.displaytitle[ 0 ];
+			displaytitle = item.printouts.displaytitle[ 0 ];
 		} else if ( item.displaytitle && item.displaytitle !== '' ) {
-			return item.displaytitle;
-		} else { return item.fulltext; }
+			displaytitle = item.displaytitle;
+		} else { displaytitle = item.fulltext; }
+		if (category_or_type !== '') displaytitle += ' (' + category_or_type + ')';
+		return displaytitle;
 	};
 
 	const getDescription = ( item ) => {
