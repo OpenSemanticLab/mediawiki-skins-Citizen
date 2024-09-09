@@ -117,12 +117,12 @@ function convertDataToResults( data, searchQuery ) {
 			}
 			if ( category_or_type === '' ) { category_or_type = textEN; }
 			if ( category_or_type === '' ) { category_or_type = item.printouts.type[ 0 ].Text.item[ 0 ]; }
-			
+
 		} else if ( item.printouts.type && item.printouts.type.length ) {
 			category_or_type = item.printouts.type[ 0 ];
 		} else if ( item.type && item.type !== '' ) {
 			category_or_type = item.type;
-		} else category_or_type = item.fulltext.includes(':') ? item.fulltext.split(':')[0] : '';
+		} else { category_or_type = item.fulltext.includes( ':' ) ? item.fulltext.split( ':' )[ 0 ] : ''; }
 		if ( item.printouts.displaytitle && item.printouts.displaytitle.length &&
 			item.printouts.displaytitle[ 0 ][ 'Language code' ] && item.printouts.displaytitle[ 0 ].Text.item.length ) {
 			// multi-lang string preference: user lang => English => first result
@@ -133,13 +133,13 @@ function convertDataToResults( data, searchQuery ) {
 			}
 			if ( displaytitle === '' ) { displaytitle = textEN; }
 			if ( displaytitle === '' ) { displaytitle = item.printouts.displaytitle[ 0 ].Text.item[ 0 ]; }
-			
+
 		} else if ( item.printouts.displaytitle && item.printouts.displaytitle.length ) {
 			displaytitle = item.printouts.displaytitle[ 0 ];
 		} else if ( item.displaytitle && item.displaytitle !== '' ) {
 			displaytitle = item.displaytitle;
 		} else { displaytitle = item.fulltext; }
-		if (category_or_type !== '') displaytitle += ' (' + category_or_type + ')';
+		if ( category_or_type !== '' ) { displaytitle += ' (' + category_or_type + ')'; }
 		return displaytitle;
 	};
 
