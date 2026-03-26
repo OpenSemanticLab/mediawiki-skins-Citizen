@@ -46,3 +46,32 @@
 		border-radius: 0;
 	}
 }
+
+/* Codex message boxes (MW 1.43+) */
+.cdx-message {
+	&--block {
+		padding: var( --space-sm ) var( --space-md );
+		border-radius: var( --border-radius--small );
+		overflow-wrap: break-word;
+		word-wrap: break-word;
+
+		.cdx-message__content {
+			min-width: 0;
+		}
+	}
+
+	&--error {
+		background-color: var( --background-color-destructive );
+		border: 1px solid var( --border-color-destructive );
+	}
+
+	&--warning {
+		background-color: var( --background-color-warning );
+		border: 1px solid var( --border-color-warning );
+	}
+
+	&--success {
+		background-color: var( --background-color-success );
+		border: 1px solid var( --border-color-success );
+	}
+}
