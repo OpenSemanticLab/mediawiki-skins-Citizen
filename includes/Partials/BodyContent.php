@@ -156,27 +156,54 @@ final class BodyContent extends Partial {
 			$collapsed = strpos( $headingClassName, self::STYLE_SECTION_HEADING_COLLAPSED_CLASS ) !== false;
 		}
 		$sectionNumber = 0;
-		$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber, $collapsed );
+		// The pre-heading section (section-collapsible-0) is emitted exactly once globally.
+		// Citizen's sections.js uses sections[i+1] to pair headings[i] with its body, so it
+		// requires exactly one anchor section at index 0. With multiple slot-wrappers, only
+		// the first container that contains (or precedes) the first heading may emit it.
+		$prependingSectionEmitted = false;
 
 		foreach ( $containers as $container ) {
+			// Skip containers that have no top-level headings (e.g. mw-slot-wrapper-header
+			// holding an info box); their content stays as-is so it neither inherits the
+			// collapsed state of another slot's first heading nor throws off the
+			// heading-to-section index mapping used by Citizen's sections.js.
+			$containerHasHeading = false;
+			for ( $c = $container->firstChild; $c; $c = $c->nextSibling ) {
+				if ( $firstHeadingName && $this->getHeadingName( $c ) === $firstHeadingName ) {
+					$containerHasHeading = true;
+					break;
+				}
+			}
+			if ( !$containerHasHeading ) {
+				continue;
+			}
+
+			// sectionBody is created on demand: when we hit the first non-heading node
+			// (pre-heading content) or when we cross a heading. This avoids emitting
+			// empty pre-heading anchor sections for every slot-wrapper.
+			$sectionBody = null;
 			$containerChild = $container->firstChild;
 
 			while ( $containerChild ) {
 				$node = $containerChild;
 				$containerChild = $containerChild->nextSibling;
 
-				// If we've found a top level heading, insert the previous section if
-				// necessary and clear the container div.
 				if ( $firstHeadingName && $this->getHeadingName( $node ) === $firstHeadingName ) {
-					// The heading we are transforming is always 1 section ahead of the
-					// section we are currently processing
 					/** @phan-suppress-next-line PhanTypeMismatchArgument DOMNode vs. DOMElement */
 					$this->prepareHeading( $doc, $node, $sectionNumber + 1 );
-					// Insert the previous section body and reset it for the new section
-					$container->insertBefore( $sectionBody, $node );
+					if ( $sectionBody !== null ) {
+						// Insert the sectionBody accumulated so far before this heading.
+						$container->insertBefore( $sectionBody, $node );
+						$prependingSectionEmitted = true;
+					} elseif ( !$prependingSectionEmitted ) {
+						// Emit the single global empty pre-heading anchor (section-collapsible-0)
+						// so Citizen's sections.js index mapping stays consistent.
+						$emptyPre = $this->createSectionBodyElement( $doc, $sectionNumber, $collapsed );
+						$container->insertBefore( $emptyPre, $node );
+						$prependingSectionEmitted = true;
+					}
 
 					++$sectionNumber;
-					// get the initial collapsed state of the current heading
 					$headingClassName = $node->hasAttribute( 'class' ) ? $node->getAttribute( 'class' ) : '';
 					$collapsed = strpos( $headingClassName, self::STYLE_SECTION_HEADING_COLLAPSED_CLASS ) !== false;
 					$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber, $collapsed );
@@ -184,13 +211,20 @@ final class BodyContent extends Partial {
 					continue;
 				}
 
-				// If it is not a top level heading, keep appending the nodes to the
-				// section body container.
+				if ( $sectionBody === null ) {
+					// Pre-heading content in this container - create sectionBody using the
+					// current sectionNumber (0 in the first container, otherwise the last
+					// heading's index so it becomes that heading's body).
+					$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber, $collapsed );
+				}
 				$sectionBody->appendChild( $node );
 			}
 
-			// Append the last section body.
-			$container->appendChild( $sectionBody );
+			// Append the last section body (may be null if the container ended immediately
+			// after a heading with no trailing content).
+			if ( $sectionBody !== null ) {
+				$container->appendChild( $sectionBody );
+			}
 		}
 
 		// Mark subheadings
