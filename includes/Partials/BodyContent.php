@@ -198,7 +198,8 @@ final class BodyContent extends Partial {
 					} elseif ( !$prependingSectionEmitted ) {
 						// Emit the single global empty pre-heading anchor (section-collapsible-0)
 						// so Citizen's sections.js index mapping stays consistent.
-						$emptyPre = $this->createSectionBodyElement( $doc, $sectionNumber, $collapsed );
+						// Never collapsed: see the note at the pre-heading content below.
+						$emptyPre = $this->createSectionBodyElement( $doc, $sectionNumber, $sectionNumber > 0 && $collapsed );
 						$container->insertBefore( $emptyPre, $node );
 						$prependingSectionEmitted = true;
 					}
@@ -215,7 +216,14 @@ final class BodyContent extends Partial {
 					// Pre-heading content in this container - create sectionBody using the
 					// current sectionNumber (0 in the first container, otherwise the last
 					// heading's index so it becomes that heading's body).
-					$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber, $collapsed );
+					//
+					// Section 0 is never collapsed. At this point $collapsed still holds
+					// the *first heading's* state, which is not this section's: section 0
+					// has no heading of its own, so nothing renders a toggle for it and
+					// collapsing it makes its content unreachable. Later containers pass
+					// $sectionNumber > 0, where $collapsed is that heading's own state and
+					// the body does belong to it.
+					$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber, $sectionNumber > 0 && $collapsed );
 				}
 				$sectionBody->appendChild( $node );
 			}
