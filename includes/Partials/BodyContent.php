@@ -213,17 +213,21 @@ final class BodyContent extends Partial {
 				}
 
 				if ( $sectionBody === null ) {
-					// Pre-heading content in this container - create sectionBody using the
-					// current sectionNumber (0 in the first container, otherwise the last
-					// heading's index so it becomes that heading's body).
-					//
-					// Section 0 is never collapsed. At this point $collapsed still holds
-					// the *first heading's* state, which is not this section's: section 0
-					// has no heading of its own, so nothing renders a toggle for it and
-					// collapsing it makes its content unreachable. Later containers pass
-					// $sectionNumber > 0, where $collapsed is that heading's own state and
-					// the body does belong to it.
-					$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber, $sectionNumber > 0 && $collapsed );
+					if ( $sectionNumber > 0 ) {
+						// Content before the first heading of a later slot-wrapper, such as
+						// the blank lines a footer template starts with. It has no heading of
+						// its own, and sections.js pairs headings with sections by position,
+						// so wrapping it would shift every heading onto the body of the one
+						// before it and leave the last body with no heading at all. It stays
+						// where it is instead.
+						continue;
+					}
+
+					// Section 0 is never collapsed. $collapsed holds the first heading's
+					// state, which is not this section's: section 0 has no heading of its
+					// own, so nothing renders a toggle for it and collapsing it would make
+					// its content unreachable.
+					$sectionBody = $this->createSectionBodyElement( $doc, $sectionNumber, false );
 				}
 				$sectionBody->appendChild( $node );
 			}
